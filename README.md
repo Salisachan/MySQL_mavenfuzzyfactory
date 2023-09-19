@@ -4,6 +4,10 @@
 
 Welcome to the Maven Fuzzy Factory SQL project! This project provides a synthetic dataset that simulates a comprehensive e-commerce environment. The dataset consists of seven tables, each containing valuable information related to e-commerce operations. This README will guide you through the dataset structure and how to use it effectively.
 
+## Important Notice
+
+Please note that the dataset in this repository is incomplete due to file size limitations imposed by GitHub. As a result, only a subset of the dataset is provided here for demonstration purposes.
+
 ## Dataset Overview
 
 The dataset comprises seven tables, each serving a specific purpose:
@@ -56,10 +60,10 @@ Here are some sample SQL queries in this project:
 
 ```sql
 SELECT 
-	utm_source, 
-	utm_campaign,
-    http_referer,
-    COUNT(DISTINCT website_session_id) AS sessions
+     utm_source, 
+     utm_campaign,
+     http_referer,
+     COUNT(DISTINCT website_session_id) AS sessions
 FROM website_sessions
 WHERE created_at <= date_add('2012-03-19',INTERVAL 3 MONTH)
 GROUP BY utm_source, utm_campaign,http_referer
@@ -71,14 +75,14 @@ ORDER BY sessions DESC;
 
 ```sql
 SELECT 
-	COUNT(DISTINCT website_sessions.website_session_id) AS sessions,
+    COUNT(DISTINCT website_sessions.website_session_id) AS sessions,
     COUNT(DISTINCT orders.order_id) AS orders,
     COUNT(DISTINCT orders.order_id)/COUNT(DISTINCT website_sessions.website_session_id)*100 AS conv_rate_percentage
 FROM website_sessions
 	LEFT JOIN orders
 		ON website_sessions.website_session_id = orders.website_session_id
 WHERE 
-	website_sessions.created_at <= date_add('2012-03-19',INTERVAL 3 MONTH)
+    website_sessions.created_at <= date_add('2012-03-19',INTERVAL 3 MONTH)
     AND website_sessions.utm_source = 'gsearch'
     AND website_sessions.utm_campaign = 'nonbrand'
 ;
@@ -90,22 +94,22 @@ WHERE
 ```mysql
 CREATE TEMPORARY TABLE first_pv_w_count
 SELECT 
-	website_sessions.website_session_id,
+    website_sessions.website_session_id,
     MIN(website_pageviews.website_pageview_id) AS first_pv_id,
     COUNT(website_pageviews.website_pageview_id) AS count_pageviews
 FROM website_sessions
 	LEFT JOIN website_pageviews
 		ON website_sessions.website_session_id = website_pageviews.website_session_id
 WHERE
-	website_sessions.created_at BETWEEN '2012-06-19 00:35:54' AND '2013-01-01'
-	AND website_sessions.utm_source = 'gsearch'
+    website_sessions.created_at BETWEEN '2012-06-19 00:35:54' AND '2013-01-01'
+    AND website_sessions.utm_source = 'gsearch'
     AND website_sessions.utm_campaign = 'nonbrand'
 GROUP BY
 	website_sessions.website_session_id
 ;
 
 SELECT 
-	MIN(DATE(website_pageviews.created_at)) AS start_of_week,
+    MIN(DATE(website_pageviews.created_at)) AS start_of_week,
     COUNT(DISTINCT website_pageviews.website_session_id) AS total_sessions,
     COUNT(DISTINCT CASE WHEN count_pageviews = 1 THEN website_pageviews.website_session_id ELSE NULL END)/
     COUNT(DISTINCT website_pageviews.website_session_id) AS bounce_rate,
