@@ -119,4 +119,42 @@ FROM first_pv_w_count
 		ON website_pageviews.website_pageview_id = first_pv_w_count.first_pv_id
 GROUP BY YEAR(website_pageviews.created_at), WEEK(website_pageviews.created_at)
 ;
-        
+
+-- Conversion funnel
+CREATE TEMPORARY TABLE made_it
+SELECT 
+	website_sessions.website_session_id,
+	MAX(CASE WHEN pageview_url = '/products' THEN 1 ELSE 0 END) AS products_page,
+	MAX(CASE WHEN pageview_url = '/the-original-mr-fuzzy' THEN 1 ELSE 0 END) AS mrfuzzy_page,
+	MAX(CASE WHEN pageview_url = '/cart' THEN 1 ELSE 0 END) AS cart_page,
+	MAX(CASE WHEN pageview_url = '/shipping' THEN 1 ELSE 0 END) AS shipping_page,
+	MAX(CASE WHEN pageview_url = '/billing' THEN 1 ELSE 0 END) AS billing_page,
+	MAX(CASE WHEN pageview_url = '/thank-you-for-your-order' THEN 1 ELSE 0 END) AS thank_page
+FROM website_sessions
+	LEFT JOIN website_pageviews
+		ON website_sessions.website_session_id = website_pageviews.website_session_id
+WHERE website_sessions.utm_source = 'gsearch'
+	AND website_sessions.utm_campaign = 'nonbrand'
+    AND website_sessions.created_at > '2012-08-05'
+	AND website_sessions.created_at < '2012-09-05'
+GROUP BY 
+	website_session_id;
+    
+SELECT 
+	COUNT(DISTINCT website_session_id) AS sessions,
+    SUM(products_page) AS to_products,
+    SUM(mrfuzzy_page) AS to_mrfuzzy,
+    SUM(cart_page) AS to_cart,
+    SUM(shipping_page) AS to_shipping,
+	SUM(billing_page) AS to_billing,
+    SUM(thank_page) AS to_thankyou
+FROM made_it;
+
+SELECT 
+    SUM(products_page)/COUNT(DISTINCT website_session_id) AS lander_clickthrough_rate,
+    SUM(mrfuzzy_page)/SUM(products_page) AS product_clickthrough_rate,
+    SUM(cart_page)/SUM(mrfuzzy_page) AS mrfuzzy_clickthrough,
+    SUM(shipping_page)/SUM(cart_page) AS cart_clickthrough,
+	SUM(billing_page)/SUM(shipping_page) AS shipping_clickthrough,
+    SUM(thank_page)/SUM(billing_page) AS billing_clickthrough
+FROM made_it;
