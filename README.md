@@ -91,21 +91,21 @@ WHERE
 
 ### find the landing page trend analysis (total sessions, bounce rate) from 2012-06-19 00:35:54 to end of the year for gsearch nonbrand traffic:
 
-```mysql
+```sql
 CREATE TEMPORARY TABLE first_pv_w_count
 SELECT 
     website_sessions.website_session_id,
     MIN(website_pageviews.website_pageview_id) AS first_pv_id,
     COUNT(website_pageviews.website_pageview_id) AS count_pageviews
 FROM website_sessions
-	LEFT JOIN website_pageviews
-		ON website_sessions.website_session_id = website_pageviews.website_session_id
+    LEFT JOIN website_pageviews
+        ON website_sessions.website_session_id = website_pageviews.website_session_id
 WHERE
     website_sessions.created_at BETWEEN '2012-06-19 00:35:54' AND '2013-01-01'
     AND website_sessions.utm_source = 'gsearch'
     AND website_sessions.utm_campaign = 'nonbrand'
 GROUP BY
-	website_sessions.website_session_id
+    website_sessions.website_session_id
 ;
 
 SELECT 
@@ -116,8 +116,8 @@ SELECT
     COUNT(DISTINCT CASE WHEN pageview_url = '/lander-1' THEN website_pageviews.website_session_id ELSE NULL END) AS lander_sessions,
     COUNT(DISTINCT CASE WHEN pageview_url = '/home' THEN website_pageviews.website_session_id  ELSE NULL END) AS home_sessions
 FROM first_pv_w_count
-	LEFT JOIN website_pageviews
-		ON website_pageviews.website_pageview_id = first_pv_w_count.first_pv_id
+    LEFT JOIN website_pageviews
+        ON website_pageviews.website_pageview_id = first_pv_w_count.first_pv_id
 GROUP BY YEAR(website_pageviews.created_at), WEEK(website_pageviews.created_at)
 ;
 ```
